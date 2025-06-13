@@ -1,242 +1,718 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CTRL-ALT-ESC: A Guide to Modern Resistance (Coming Soon)</title>
-    <meta name="description" content="CTRL-ALT-ESC: A Guide to Modern Resistance. Launching June 28, 2025. Learn to reclaim your autonomy in a digital world.">
+    <title>Interactive Report: The Risks to Neurorights</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;700&family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Scholarly Neutral -->
+    <!-- Application Structure Plan: The SPA is organized into thematic sections accessible via a sticky navigation bar: 1) An 'Overview' to introduce the five core neurorights with interactive cards. 2) A 'Threats Deep Dive' featuring an interactive Chart.js visualization allowing users to filter violations by neuroright. 3) A 'Technologies' section using a tabbed interface to explain BCIs, AI, and Wearables. 4) A 'Global Response' section using cards to compare legislative actions in different regions. 5) A 'Future & Recommendations' section with accordions for stakeholder-specific advice. This structure was chosen to transform the linear report into a multi-faceted exploratory tool, allowing users to approach the content from the perspective of rights, technologies, or policy, which enhances usability and comprehension over a simple document scroll. -->
+    <!-- Visualization & Content Choices: 1) Core Neurorights (Inform): Interactive HTML cards for high-level navigation. 2) Violations Matrix (Compare/Organize): A dynamic Chart.js bar chart linked to filter buttons and a text panel. This interactively connects rights, violations, and technologies, replacing the static source table. 3) Technologies (Inform/Organize): A tabbed HTML/JS interface to segment complex information. 4) Legislative Efforts (Compare): HTML cards for a clean, responsive comparison of regional policies. 5) Recommendations (Organize): An HTML/JS accordion to make dense lists scannable. All choices prioritize interactivity and clarity within the designed application structure, using Chart.js for data visualization and custom JS for UI interactions. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
     <style>
-        /* Custom styles to extend Tailwind */
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #0a0a0a;
-            color: #e5e5e5;
+            background-color: #F8F7F4;
+            color: #1f2937;
         }
-        .font-fira {
-            font-family: 'Fira Code', monospace;
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 320px;
+            max-height: 50vh;
         }
-        .text-glow {
-            text-shadow: 0 0 8px rgba(52, 211, 153, 0.6), 0 0 20px rgba(52, 211, 153, 0.4);
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 450px;
+            }
         }
-        .hero-bg {
-            background-image: 
-                radial-gradient(circle at 15% 50%, rgba(52, 211, 153, 0.1), transparent 30%),
-                radial-gradient(circle at 85% 30%, rgba(59, 130, 246, 0.1), transparent 30%);
-            background-color: #0a0a0a;
+        .nav-link {
+            transition: color 0.3s, border-color 0.3s;
         }
-        .section-divider {
-            height: 1px;
-            background: linear-gradient(90deg, transparent, rgba(52, 211, 153, 0.3), transparent);
-            margin: 4rem auto;
-            width: 80%;
+        .nav-link.active {
+            color: #3b82f6;
+            border-bottom-color: #3b82f6;
         }
-        .card-bg {
-            background-color: rgba(23, 23, 23, 0.7);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(52, 211, 153, 0.2);
+        .neuroright-card {
+            transition: transform 0.3s, box-shadow 0.3s;
         }
-        .countdown-box {
-            background-color: rgba(23, 23, 23, 0.7);
-            border: 1px solid rgba(52, 211, 153, 0.2);
+        .neuroright-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+        .filter-btn.active {
+            background-color: #3b82f6;
+            color: white;
+        }
+        .tech-tab.active {
+            background-color: #1e40af;
+            color: white;
+        }
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3b82f6;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
     </style>
 </head>
 <body class="antialiased">
 
-    <!-- Header -->
-    <header class="fixed top-0 left-0 right-0 z-50 bg-black/50 backdrop-blur-sm">
-        <div class="container mx-auto px-6 py-4 flex justify-between items-center">
-            <h1 class="text-xl font-bold font-fira text-emerald-400 text-glow">CTRL-ALT-ESC</h1>
-            <a href="#notify" class="bg-emerald-500 text-black font-bold py-2 px-6 rounded-lg hover:bg-emerald-400 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-emerald-400" aria-label="Sign up to be notified when CTRL-ALT-ESC launches">Notify Me</a>
-        </div>
+    <header class="bg-white/80 backdrop-blur-md sticky top-0 z-50 shadow-sm">
+        <nav class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex-shrink-0">
+                    <h1 class="text-xl font-bold text-gray-800">Neurorights Explorer</h1>
+                </div>
+                <div class="hidden md:block">
+                    <div class="ml-10 flex items-baseline space-x-4">
+                        <a href="#overview" class="nav-link text-gray-600 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium border-b-2 border-transparent">Overview</a>
+                        <a href="#threats" class="nav-link text-gray-600 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium border-b-2 border-transparent">Threats Deep Dive</a>
+                        <a href="#tech" class="nav-link text-gray-600 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium border-b-2 border-transparent">Technologies</a>
+                        <a href="#scenarios" class="nav-link text-gray-600 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium border-b-2 border-transparent">Explore Scenarios</a>
+                        <a href="#response" class="nav-link text-gray-600 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium border-b-2 border-transparent">Global Response</a>
+                        <a href="#future" class="nav-link text-gray-600 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium border-b-2 border-transparent">Future & Recommendations</a>
+                    </div>
+                </div>
+            </div>
+        </nav>
     </header>
 
-    <!-- Hero Section -->
-    <main class="hero-bg pt-24 md:pt-32">
-        <section class="container mx-auto px-6 text-center">
-            <div class="max-w-4xl mx-auto">
-                <p class="font-fira text-emerald-400 mb-4">[SYSTEM_REBOOT_INITIATING]</p>
-                <h2 class="text-4xl md:text-6xl font-black tracking-tighter leading-tight mb-6">The Old Anarchist Cookbook is Obsolete. This is its Evolution.</h2>
-                <p class="text-lg md:text-xl text-neutral-300 max-w-2xl mx-auto mb-10">
-                    Control in the modern world doesn't come with jackboots. It comes with cookies, terms of service, and always-on microphones. This is a manual for the modern dissident, the digital refugee, and the citizen who refuses to be merely a data point.
+    <main>
+        <section id="overview" class="py-16 sm:py-24 bg-white">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
+                <p class="text-base font-semibold text-blue-600 tracking-wide uppercase">An Interactive Analysis</p>
+                <h2 class="mt-2 text-3xl font-extrabold text-gray-900 tracking-tight sm:text-4xl">Safeguarding the Mind in the Age of Neurotechnology</h2>
+                <p class="mt-6 max-w-3xl mx-auto text-lg text-gray-600">
+                    Rapid advances in neurotechnology, which can read and influence brain activity, offer immense promise but also pose profound risks to our most private domain: the mind. This report explores the concept of "neurorights"—a framework to protect our mental privacy, identity, and free will. Explore the five core proposed neurorights below to understand the key areas of concern.
                 </p>
-                <a href="#notify" class="bg-emerald-500 text-black font-bold py-4 px-10 rounded-lg text-lg hover:bg-emerald-400 transition-colors duration-300 inline-block focus:outline-none focus:ring-2 focus:ring-emerald-400" aria-label="Join the launch list for CTRL-ALT-ESC">Join the Launch List</a>
+                <!-- Petition CTA Button -->
+                <div class="mt-8 flex justify-center">
+                    <a href="https://www.change.org/mindmatters" target="_blank" rel="noopener" class="inline-block bg-blue-600 hover:bg-blue-700 text-white font-semibold px-8 py-3 rounded-lg shadow transition focus:outline-none focus:ring-2 focus:ring-blue-400" aria-label="Sign the Mind Matters Petition on Change.org">
+                        📝 Sign the Mind Matters Petition
+                    </a>
+                </div>
             </div>
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8 mt-12">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8">
+                    <div class="neuroright-card bg-slate-50 rounded-xl p-6 shadow-sm cursor-pointer" data-right="mental-privacy">
+                        <h3 class="text-lg font-semibold text-gray-900">Mental Privacy</h3>
+                        <p class="mt-2 text-gray-600">The right for neurodata to be private and protected from unauthorized access or commercial exploitation.</p>
+                    </div>
+                    <div class="neuroright-card bg-slate-50 rounded-xl p-6 shadow-sm cursor-pointer" data-right="personal-identity">
+                        <h3 class="text-lg font-semibold text-gray-900">Personal Identity & Mental Integrity</h3>
+                        <p class="mt-2 text-gray-600">The right to protect one's sense of self and psychological continuity from unconsented alteration.</p>
+                    </div>
+                    <div class="neuroright-card bg-slate-50 rounded-xl p-6 shadow-sm cursor-pointer" data-right="free-will">
+                        <h3 class="text-lg font-semibold text-gray-900">Free Will & Cognitive Liberty</h3>
+                        <p class="mt-2 text-gray-600">The right to control one's own decision-making, free from unconsented manipulation by neurotech.</p>
+                    </div>
+                    <div class="neuroright-card bg-slate-50 rounded-xl p-6 shadow-sm cursor-pointer" data-right="fair-access">
+                        <h3 class="text-lg font-semibold text-gray-900">Fair Access to Augmentation</h3>
+                        <p class="mt-2 text-gray-600">The right to equitable access to technologies that enhance mental capacities, preventing a "neuro-divide."</p>
+                    </div>
+                    <div class="neuroright-card bg-slate-50 rounded-xl p-6 shadow-sm cursor-pointer" data-right="bias-protection">
+                        <h3 class="text-lg font-semibold text-gray-900">Protection from Bias</h3>
+                        <p class="mt-2 text-gray-600">The right to not be discriminated against by biased algorithms in neurotechnology applications.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
 
-            <!-- Book Mockup -->
-            <div class="mt-16 flex justify-center">
-                <div class="w-64 h-96 card-bg rounded-2xl p-6 shadow-2xl shadow-emerald-500/10 transform perspective-1000 rotate-y-15 hover:rotate-y-0 transition-transform duration-500">
-                    <!-- Note: 'perspective-1000' and 'rotate-y-15' are custom classes, not standard Tailwind. Add custom CSS if needed. -->
-                    <div class="w-full h-full border-2 border-emerald-500/50 rounded-lg flex flex-col justify-between p-4">
-                        <div>
-                            <p class="font-fira text-emerald-400 text-xs text-glow">[MANUAL.v2.0]</p>
-                            <h3 class="text-3xl font-black text-white mt-4 leading-tight">CTRL-ALT-ESC</h3>
-                            <p class="text-neutral-400 text-sm mt-2">A Guide to Modern Resistance & Digital Rebellion</p>
+        <section id="threats" class="py-16 sm:py-24">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center">
+                    <h2 class="text-3xl font-extrabold text-gray-900 tracking-tight sm:text-4xl">Threats Deep Dive: A Matrix of Violations</h2>
+                    <p class="mt-4 max-w-2xl mx-auto text-xl text-gray-600">
+                        Neurorights can be violated in numerous ways by different technologies. This section provides an interactive breakdown of these threats. Select a neuroright to see the specific violations and the technologies most commonly implicated. This allows for a detailed exploration of how our mental freedoms are at risk.
+                    </p>
+                </div>
+                <div class="mt-12">
+                    <div class="flex flex-wrap justify-center gap-2 md:gap-4 mb-8">
+                        <button class="filter-btn px-4 py-2 text-sm font-medium rounded-full border border-gray-300 bg-white hover:bg-gray-100 transition" data-right="mental-privacy">Mental Privacy</button>
+                        <button class="filter-btn px-4 py-2 text-sm font-medium rounded-full border border-gray-300 bg-white hover:bg-gray-100 transition" data-right="personal-identity">Personal Identity</button>
+                        <button class="filter-btn px-4 py-2 text-sm font-medium rounded-full border border-gray-300 bg-white hover:bg-gray-100 transition" data-right="free-will">Free Will</button>
+                        <button class="filter-btn px-4 py-2 text-sm font-medium rounded-full border border-gray-300 bg-white hover:bg-gray-100 transition" data-right="fair-access">Fair Access</button>
+                        <button class="filter-btn px-4 py-2 text-sm font-medium rounded-full border border-gray-300 bg-white hover:bg-gray-100 transition" data-right="bias-protection">Protection from Bias</button>
+                    </div>
+
+                    <div class="bg-white rounded-xl shadow-lg p-6 md:p-8">
+                        <h3 id="threat-title" class="text-2xl font-bold text-gray-900 mb-4"></h3>
+                        <div class="grid grid-cols-1 lg:grid-cols-5 gap-8">
+                            <div class="lg:col-span-3">
+                                <p id="threat-description" class="text-gray-600 mb-6"></p>
+                                <div class="chart-container">
+                                    <canvas id="threatsChart"></canvas>
+                                </div>
+                            </div>
+                            <div class="lg:col-span-2">
+                                <div id="threat-details" class="space-y-4"></div>
+                            </div>
                         </div>
-                        <div class="text-left">
-                           <p class="text-neutral-500 font-fira text-xs">// Launching June 28, 2025</p>
-                           <p class="text-sm font-bold text-white mt-4">Matthew Danielson</p>
-                        </div>
                     </div>
                 </div>
             </div>
         </section>
 
-        <div class="section-divider"></div>
-
-        <!-- What You'll Learn Section -->
-        <section id="features" class="container mx-auto px-6 py-16">
-            <div class="text-center mb-12">
-                <h2 class="text-3xl md:text-4xl font-black tracking-tight">This Book is Your Operating System Reboot.</h2>
-                <p class="text-lg text-neutral-400 mt-4 max-w-2xl mx-auto">It will teach you how to dissolve illusions, dependencies, and the manufactured realities that keep you captive.</p>
-            </div>
-            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-                <!-- Feature Card -->
-                <div class="card-bg p-8 rounded-2xl">
-                    <div class="flex items-center justify-center h-12 w-12 rounded-full bg-emerald-900 mb-6">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 11c0 3.517-1.009 6.799-2.753 9.571m-3.44-2.04l.054-.09A13.916 13.916 0 008 11a4 4 0 118 0c0 1.017-.07 2.019-.203 3m-2.118 6.844A21.88 21.88 0 0015.171 17m3.839 1.132c.645-1.096.906-2.48.906-4.132 0-3.87-1.34-7.411-3.521-10.257M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-                    </div>
-                    <h3 class="text-xl font-bold mb-2">Deconstruct Control</h3>
-                    <p class="text-neutral-400">Understand how corporate algorithms, state surveillance, and mass media manipulate your perceptions and choices.</p>
+        <section id="tech" class="py-16 sm:py-24 bg-white">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center">
+                    <h2 class="text-3xl font-extrabold text-gray-900 tracking-tight sm:text-4xl">The Technologies Driving the Change</h2>
+                    <p class="mt-4 max-w-2xl mx-auto text-xl text-gray-600">
+                       The potential for neurorights violations is intrinsically linked to the capabilities of specific emerging neurotechnologies. Understanding these tools is key to grasping the nature of the threat. Explore the main categories of technology below to learn how they work and the unique risks they present to our mental autonomy and privacy.
+                    </p>
                 </div>
-                <!-- Feature Card -->
-                <div class="card-bg p-8 rounded-2xl">
-                     <div class="flex items-center justify-center h-12 w-12 rounded-full bg-emerald-900 mb-6">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
+                <div class="mt-12 max-w-4xl mx-auto">
+                    <div class="flex flex-col sm:flex-row rounded-xl bg-blue-900 p-1">
+                        <button class="tech-tab flex-1 p-3 text-white rounded-lg font-semibold" data-tech="bci">Brain-Computer Interfaces (BCIs)</button>
+                        <button class="tech-tab flex-1 p-3 text-blue-200 rounded-lg font-semibold" data-tech="ai">AI & Neuroimaging</button>
+                        <button class="tech-tab flex-1 p-3 text-blue-200 rounded-lg font-semibold" data-tech="wearables">Wearable Neurodevices</button>
                     </div>
-                    <h3 class="text-xl font-bold mb-2">Build Your Digital Fortress</h3>
-                    <p class="text-neutral-400">Master encryption, anonymity tools (Tor, VPNs), and operational security to protect your data and communications.</p>
-                </div>
-                <!-- Feature Card -->
-                <div class="card-bg p-8 rounded-2xl">
-                     <div class="flex items-center justify-center h-12 w-12 rounded-full bg-emerald-900 mb-6">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7.014A8.003 8.003 0 0112 2a8.003 8.003 0 016.014 2.986C20.5 5 21 8 21 10c2 1 2.657 1.657 2.657 1.657a8 8 0 01-11.314 7z" /></svg>
+                    <div id="tech-content" class="mt-6 bg-slate-50 rounded-lg p-6">
                     </div>
-                    <h3 class="text-xl font-bold mb-2">Cultivate Physical Autonomy</h3>
-                    <p class="text-neutral-400">Explore paths to self-sufficiency in food, energy, and technology, reducing your reliance on centralized systems.</p>
                 </div>
             </div>
         </section>
-
-        <div class="section-divider"></div>
-
-        <!-- Pre-Launch CTA Section -->
-        <section id="notify" class="container mx-auto px-6 py-24 text-center">
-            <h2 class="text-4xl md:text-5xl font-black tracking-tight mb-4">The Launch Sequence is Initiated.</h2>
-            <p class="text-xl text-neutral-300 mb-10 max-w-2xl mx-auto">Launching <span class="text-emerald-400 font-bold">June 28, 2025</span>. Join the list to be notified the moment the codex is live.</p>
-
-            <!-- Countdown Timer -->
-            <div id="countdown" class="flex justify-center items-center gap-4 md:gap-8 my-12 font-fira">
-                <div class="countdown-box p-4 md:p-6 rounded-lg text-center w-24 md:w-32">
-                    <span id="days" class="text-4xl md:text-6xl font-black text-white">--</span>
-                    <span class="text-sm text-neutral-400 block mt-1">Days</span>
-                </div>
-                <div class="countdown-box p-4 md:p-6 rounded-lg text-center w-24 md:w-32">
-                    <span id="hours" class="text-4xl md:text-6xl font-black text-white">--</span>
-                    <span class="text-sm text-neutral-400 block mt-1">Hours</span>
-                </div>
-                <div class="countdown-box p-4 md:p-6 rounded-lg text-center w-24 md:w-32">
-                    <span id="minutes" class="text-4xl md:text-6xl font-black text-white">--</span>
-                    <span class="text-sm text-neutral-400 block mt-1">Minutes</span>
-                </div>
-                <div class="countdown-box p-4 md:p-6 rounded-lg text-center w-24 md:w-32">
-                    <span id="seconds" class="text-4xl md:text-6xl font-black text-white">--</span>
-                    <span class="text-sm text-neutral-400 block mt-1">Seconds</span>
-                </div>
-            </div>
-
-            <!-- Email Form -->
-            <div class="max-w-xl mx-auto mt-12">
-                <form id="notify-form" class="flex flex-col sm:flex-row gap-4">
-                    <input type="email" id="email-input" placeholder="your-email@proton.me" required class="flex-grow bg-neutral-800 border border-neutral-700 text-white placeholder-neutral-500 rounded-lg px-4 py-3 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 focus:outline-none transition-all">
-                    <button type="submit" class="bg-emerald-500 text-black font-bold py-3 px-8 rounded-lg hover:bg-emerald-400 transition-colors duration-300">Notify Me</button>
-                </form>
-                <p id="form-message" class="text-emerald-400 mt-4 h-6"></p>
-            </div>
-        </section>
-
-        <div class="section-divider"></div>
         
-        <!-- Author Section -->
-        <section id="author" class="container mx-auto px-6 py-16">
-            <div class="max-w-4xl mx-auto flex flex-col md:flex-row items-center gap-12 card-bg p-8 md:p-12 rounded-2xl">
-                <img src="https://placehold.co/400x400/171717/34d399?text=MD" alt="Portrait of Matthew Danielson, author of CTRL-ALT-ESC" class="w-48 h-48 rounded-full border-4 border-emerald-500/50 object-cover" loading="lazy">
-                <div>
-                    <h2 class="text-3xl font-bold mb-4">About the Author</h2>
-                    <p class="text-xl font-bold text-white mb-2">Matthew Danielson</p>
-                    <p class="text-neutral-400">Matthew Danielson is a writer, researcher, and advocate for digital rights and decentralized technologies. He focuses on the intersection of technology, power, and civil liberties, providing practical frameworks for individuals seeking to reclaim their autonomy in an increasingly complex and controlled world. 'CTRL-ALT-ESC' is his manifesto for a more transparent, equitable, and liberated future.</p>
+        <section id="scenarios" class="py-16 sm:py-24">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center">
+                    <h2 class="text-3xl font-extrabold text-gray-900 tracking-tight sm:text-4xl">✨ Explore Scenarios</h2>
+                    <p class="mt-4 max-w-2xl mx-auto text-xl text-gray-600">
+                        To understand the real-world implications, select a neuroright and a technology below. The Gemini API will generate a hypothetical scenario of misuse, illustrating how these abstract threats could manifest in everyday life.
+                    </p>
+                </div>
+                <div class="mt-12 max-w-2xl mx-auto">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label for="scenario-right" class="block text-sm font-medium text-gray-700">Neuroright</label>
+                            <select id="scenario-right" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md">
+                                <option value="mental-privacy">Mental Privacy</option>
+                                <option value="personal-identity">Personal Identity</option>
+                                <option value="free-will">Free Will</option>
+                                <option value="fair-access">Fair Access</option>
+                                <option value="bias-protection">Protection from Bias</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="scenario-tech" class="block text-sm font-medium text-gray-700">Technology</label>
+                            <select id="scenario-tech" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md">
+                                <option value="bci">BCIs</option>
+                                <option value="ai">AI & Neuroimaging</option>
+                                <option value="wearables">Wearable Neurodevices</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mt-6">
+                        <button id="generate-scenario" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                            Generate Scenario
+                        </button>
+                    </div>
+                    <div id="scenario-output" class="mt-6 p-6 bg-white rounded-xl shadow-lg min-h-[150px] flex items-center justify-center">
+                        <p class="text-gray-500">Your generated scenario will appear here.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="response" class="py-16 sm:py-24 bg-white">
+             <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center">
+                    <h2 class="text-3xl font-extrabold text-gray-900 tracking-tight sm:text-4xl">The Global Response: Law and Ethics</h2>
+                    <p class="mt-4 max-w-2xl mx-auto text-xl text-gray-600">
+                        In response to these emerging threats, a global conversation on regulation has begun. Efforts range from creating new, specific neurorights to adapting existing human rights law. This section highlights key international initiatives and pioneering national legislation, showcasing the patchwork of governance taking shape worldwide.
+                    </p>
+                </div>
+                <div class="mt-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <div class="bg-white rounded-xl shadow-lg p-6">
+                        <h3 class="text-xl font-bold text-gray-900">International Initiatives</h3>
+                        <p class="mt-2 text-gray-600">Global bodies are developing crucial frameworks. The <span class="font-semibold">UN Human Rights Council</span> is studying the issue, the <span class="font-semibold">OECD</span> has released recommendations for responsible innovation, and <span class="font-semibold">UNESCO</span> is working on ethical guidelines. These efforts aim to build international consensus and provide a foundation for global governance.</p>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-lg p-6">
+                        <h3 class="text-xl font-bold text-gray-900">Pioneering Legislation: Chile</h3>
+                        <p class="mt-2 text-gray-600">Chile is a global leader, having amended its <span class="font-semibold">Constitution in 2021</span> to explicitly protect mental integrity and brain activity. This was complemented by a specific law on neurorights, setting a powerful precedent and demonstrating a proactive legislative approach to safeguarding citizens before widespread harm occurs.</p>
+                    </div>
+                     <div class="bg-white rounded-xl shadow-lg p-6">
+                        <h3 class="text-xl font-bold text-gray-900">Evolving Frameworks: US & EU</h3>
+                        <p class="mt-2 text-gray-600">The US is seeing action at the state level, with <span class="font-semibold">Colorado and California</span> passing laws to protect neural data. The EU is leveraging broader regulations like the <span class="font-semibold">AI Act and GDPR</span>, which prohibit manipulative AI and govern sensitive data, though debates continue on the need for more neuro-specific rules.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="future" class="py-16 sm:py-24">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                 <div class="text-center">
+                    <h2 class="text-3xl font-extrabold text-gray-900 tracking-tight sm:text-4xl">Future Directions & Recommendations</h2>
+                    <p class="mt-4 max-w-2xl mx-auto text-xl text-gray-600">
+                        Safeguarding neurorights is a complex, ongoing challenge requiring collaboration across society. The future will bring more advanced technologies and deeper societal questions. This section outlines key challenges and presents actionable recommendations for various stakeholders to ensure that innovation aligns with human dignity and rights.
+                    </p>
+                     <div class="mt-8 text-center">
+                        <button id="summarize-recommendations" class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                            ✨ Summarize Recommendations
+                        </button>
+                    </div>
+                </div>
+                <div class="mt-12 max-w-4xl mx-auto space-y-4" id="recommendations-container">
                 </div>
             </div>
         </section>
     </main>
 
-    <!-- Footer -->
-    <footer class="bg-neutral-900/50">
-        <div class="container mx-auto px-6 py-8 text-center text-neutral-500">
-            <p>&copy; 2025 Matthew Danielson. All Rights Reserved.</p>
-            <p class="text-sm mt-2">This is not a call to violence. This is a call to empowerment, not destruction.</p>
+    <div id="summary-modal" class="fixed z-50 inset-0 overflow-y-auto hidden">
+        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
+            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+            <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                    <div class="sm:flex sm:items-start">
+                        <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
+                            <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">
+                                Summary of Recommendations
+                            </h3>
+                            <div class="mt-2" id="modal-content">
+                                <p class="text-sm text-gray-500">Generating summary...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                    <button type="button" id="close-modal" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                        Close
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <footer class="bg-gray-800">
+        <div class="container mx-auto py-8 px-4 sm:px-6 lg:px-8 text-center text-gray-400">
+            <p>Interactive Neurorights Report | An SPA created from expert analysis.</p>
+            <p class="text-sm mt-2">This application is for informational purposes and synthesizes content from the "Neurorights Violations" report.</p>
+            <!-- Support Us Section -->
+            <div class="mt-8 flex flex-col items-center gap-6">
+                <div>
+                    <a href="https://www.change.org/mindmatters" target="_blank" rel="noopener" class="inline-block bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-2 rounded-lg shadow transition focus:outline-none focus:ring-2 focus:ring-blue-400" aria-label="Sign the Mind Matters Petition on Change.org">
+                        📝 Sign the Mind Matters Petition
+                    </a>
+                </div>
+                <div id="donate-button-container" class="bg-white rounded-lg shadow p-4 flex flex-col items-center">
+                    <span class="block text-gray-800 font-semibold mb-2">Support Our Work</span>
+                    <div id="donate-button"></div>
+                    <script src="https://www.paypalobjects.com/donate/sdk/donate-sdk.js" charset="UTF-8"></script>
+                    <script>
+                        PayPal.Donation.Button({
+                          env: 'production',
+                          hosted_button_id: 'ETUKQ9S7Y5FHL',
+                          image: {
+                            src: 'https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif',
+                            alt: 'Donate with PayPal button',
+                            title: 'PayPal - The safer, easier way to pay online!',
+                          }
+                        }).render('#donate-button');
+                    </script>
+                </div>
+            </div>
         </div>
     </footer>
 
-<script>
-    // Countdown Timer Logic
-    const countdownDate = new Date("June 28, 2025 00:00:00").getTime();
+    <script>
+        const neurorightsData = {
+            "mental-privacy": {
+                title: "The Right to Mental Privacy",
+                description: "This right asserts that an individual's neural data—information derived directly from their brain activity—should be considered private. Its collection, storage, use, or sale should not occur without explicit, informed consent. Neurodata is exceptionally sensitive, capable of revealing emotions, cognitive biases, memories, and even thought patterns.",
+                violations: [
+                    { name: "Commercial Exploitation", impact: 9 },
+                    { name: "Unauthorized Surveillance", impact: 8 },
+                    { name: "Profiling & Discrimination", impact: 7 },
+                    { name: "Compelled Disclosure (Legal)", impact: 6 }
+                ],
+                details: [
+                    { title: "Unauthorized Data Collection", text: "Consumer neurotech often operates in a regulatory grey area with opaque data practices, collecting neurodata without truly informed consent." },
+                    { title: "Workplace Surveillance", text: "Neurotech is used to monitor employee attention, engagement, or stress, creating an environment of fear and chilling dissent." },
+                    { title: "Misuse of Neurodata", text: "Data is sold for targeted advertising or used to create profiles that lead to discrimination in employment or insurance." },
+                    { title: "Implicated Tech", text: "EEG, fMRI, Wearable Neuro-sensors, BCIs, AI Algorithms." }
+                ]
+            },
+            "personal-identity": {
+                title: "The Right to Personal Identity & Mental Integrity",
+                description: "This right seeks to protect an individual's sense of self, consciousness, personality, and psychological continuity from unconsented alteration by neurotechnologies. It involves shielding individuals from nonconsensual interferences that bypass their reasoning and result in mental harm.",
+                violations: [
+                    { name: "Memory Alteration", impact: 9 },
+                    { name: "Coercive 'Neurocorrection'", impact: 8 },
+                    { name: "Personality/Emotion Alteration", impact: 7 },
+                    { name: "Brainjacking (Hacking)", impact: 6 }
+                ],
+                details: [
+                    { title: "Non-consensual Memory Modification", text: "Technologies that alter, erase, or implant memories pose a profound threat to an individual's narrative identity and autonomy." },
+                    { title: "Coerced Interventions", text: "The use of neurointerventions (e.g., DBS) in correctional facilities to alter behavior raises grave human rights concerns about consent." },
+                    { title: "Alteration of Self", text: "Direct neural stimulation or BCIs could be used to modify emotional states or personality traits without consent." },
+                    { title: "Implicated Tech", text: "Deep Brain Stimulation (DBS), BCIs, Neuropharmaceuticals, Advanced Neuroimaging." }
+                ]
+            },
+            "free-will": {
+                title: "The Right to Free Will & Cognitive Liberty",
+                description: "This cluster of rights aims to ensure that individuals retain control over their decision-making processes and actions, free from unknown or unconsented manipulation or coercion via neurotechnology. Violations are often subtle, targeting the very mechanisms of thought and choice.",
+                 violations: [
+                    { name: "Behavioral Manipulation", impact: 9 },
+                    { name: "Hypernudging & Micro-direction", impact: 8 },
+                    { name: "Subliminal Influence", impact: 6 },
+                    { name: "Coercive Optimization", impact: 5 }
+                ],
+                details: [
+                    { title: "Hypernudging", text: "AI leverages personal data to 'read minds' and subtly micro-direct actions and preferences, subverting decision-making." },
+                    { title: "Subliminal Techniques", text: "The EU AI Act recognizes the risk of AI or VR using subliminal techniques to materially distort behavior and subvert free choice." },
+                    { title: "Workplace Coercion", text: "Monitoring cognitive states at work can create pressure for employees to modulate their mental states to meet employer expectations." },
+                    { title: "Implicated Tech", text: "AI Algorithms, Recommender Systems, BCIs, VR combined with neuro-sensors." }
+                ]
+            },
+            "fair-access": {
+                title: "The Right to Fair Access to Mental Augmentation",
+                description: "As neurotechnologies offer possibilities for cognitive enhancement, this right promotes equitable access, aiming to prevent the emergence of a 'neurotech divide' that could exacerbate existing societal inequalities. The debate centers on justice and equality in distribution.",
+                violations: [
+                    { name: "Prohibitive Cost & Access", impact: 9 },
+                    { name: "Exacerbated Inequality", impact: 8 },
+                    { name: "Discriminatory Allocation", impact: 6 },
+                    { name: "Social Pressure to Enhance", impact: 5 }
+                ],
+                details: [
+                    { title: "The 'Neurotech Divide'", text: "Unequal access to cognitive enhancement could create new forms of social stratification between the 'enhanced' and 'unenhanced'." },
+                    { title: "Socioeconomic Disparities", text: "High costs may limit enhancements to the wealthy, worsening inequalities in education and employment." },
+                    { title: "Resource Allocation", text: "Ethical concerns arise from allocating public resources to non-therapeutic enhancement when basic health needs are unmet." },
+                    { title: "Implicated Tech", text: "Advanced BCIs, Neurostimulation devices, Nootropic drugs." }
+                ]
+            },
+            "bias-protection": {
+                title: "The Right to Protection from Algorithmic Bias",
+                description: "This right mandates that neurotechnology algorithms and applications be designed and implemented in ways that do not discriminate against individuals or groups based on their neural characteristics or any other protected attributes. It aims to prevent the encoding of societal biases in a highly sensitive domain.",
+                violations: [
+                    { name: "Biased Neuro-screening", impact: 9 },
+                    { name: "Unfair Diagnostic Tools", impact: 8 },
+                    { name: "Flawed Data-driven Profiling", impact: 7 },
+                    { name: "Amplification of Societal Bias", impact: 6 }
+                ],
+                details: [
+                    { title: "Discriminatory Outcomes", text: "Bias in AI algorithms, often from unrepresentative training data, can lead to inaccurate or unfair outcomes for certain demographic groups." },
+                    { title: "Biased Hiring Tools", text: "Neuro-screening tools used in employment could unfairly disadvantage certain groups based on flawed algorithmic assessments." },
+                    { title: "Inequitable Healthcare", text: "Biased AI in diagnostic tools could lead to incorrect mental health diagnoses or treatment recommendations for minorities or women." },
+                    { title: "Implicated Tech", text: "AI Algorithms, Machine Learning Models trained on neurodata, Diagnostic Systems." }
+                ]
+            }
+        };
 
-    const countdownFunction = setInterval(() => {
-        const now = new Date().getTime();
-        const distance = countdownDate - now;
+        const techData = {
+            bci: {
+                title: "Brain-Computer Interfaces (BCIs)",
+                content: "BCIs create a direct communication pathway between the brain and an external device. They can 'read' neural signals to control computers or prosthetics, or 'write' information into the brain via stimulation. This direct access poses acute risks.",
+                risks: ["Mental Privacy (access to unfiltered thoughts)", "Mental Integrity (risk of 'brainjacking' or hacking)", "Personal Identity (blurring lines between self and avatar)", "Free Will (potential to override user's choices)"]
+            },
+            ai: {
+                title: "Artificial Intelligence & Neuroimaging",
+                content: "AI, especially machine learning, is used to decode complex data from neuroimaging techniques like fMRI and EEG. This synergy enables the extraction of thoughts, emotions, and intentions from brain activity with increasing accuracy, amplifying risks.",
+                risks: ["Mental Privacy (AI 'mind-reading' and profiling)", "Cognitive Liberty (AI-driven neuromarketing and manipulation)", "Protection from Bias (AI models inheriting and amplifying societal biases)"]
+            },
+            wearables: {
+                title: "Wearable Neurodevices",
+                content: "The consumer market is growing with devices like headbands and earbuds that monitor brain activity for wellness or focus. While less invasive, their pervasiveness and laxer regulatory oversight create distinct concerns.",
+                risks: ["Mental Privacy (opaque data policies and sale of neurodata)", "Cognitive Liberty (subtle, poorly understood cognitive modulation)", "Fair Access (inequality in access to wellness-enhancing devices)"]
+            }
+        };
 
-        if (distance < 0) {
-            clearInterval(countdownFunction);
-            document.getElementById("countdown").innerHTML = "<div class='text-2xl font-bold text-emerald-400'>The Codex is Live.</div>";
-            return;
-        }
+        const recommendationsData = [
+            {
+                stakeholder: 'Policymakers and Legislators',
+                points: [
+                    "Develop clear, robust, and adaptable legal frameworks for neurodata governance.",
+                    "Adopt a hybrid approach, applying existing human rights law while considering new neurorights.",
+                    "Mandate rigorous human rights impact assessments for new neurotechnologies.",
+                    "Establish independent, multidisciplinary oversight bodies.",
+                    "Promote international cooperation for harmonized standards."
+                ]
+            },
+            {
+                stakeholder: 'Technologists, Researchers, and Industry',
+                points: [
+                    "Embed 'Ethics and Rights by Design' into the entire technology lifecycle.",
+                    "Develop and adhere to stringent industry-wide codes of conduct.",
+                    "Invest in state-of-the-art data security to prevent breaches and 'brainjacking'.",
+                    "Foster transparency and public engagement about technology capabilities and risks."
+                ]
+            },
+            {
+                stakeholder: 'Legal Professionals and Academics',
+                points: [
+                    "Advance conceptual and legal clarity on the definitions of neurorights.",
+                    "Develop legal theories and precedents through scholarly work and strategic litigation.",
+                    "Explore innovative redress mechanisms for victims of neurorights violations."
+                ]
+            }
+        ];
 
-        const days = Math.floor(distance / (1000 * 60 * 60 * 24));
-        const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-        const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-        const seconds = Math.floor((distance % (1000 * 60)) / 1000);
 
-        document.getElementById("days").innerText = String(days).padStart(2, '0');
-        document.getElementById("hours").innerText = String(hours).padStart(2, '0');
-        document.getElementById("minutes").innerText = String(minutes).padStart(2, '0');
-        document.getElementById("seconds").innerText = String(seconds).padStart(2, '0');
+        document.addEventListener('DOMContentLoaded', () => {
+            const ctx = document.getElementById('threatsChart').getContext('2d');
+            let threatsChart;
 
-    }, 1000);
-
-    // Form Submission Logic
-    const notifyForm = document.getElementById('notify-form');
-    const emailInput = document.getElementById('email-input');
-    const formMessage = document.getElementById('form-message');
-
-    notifyForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const email = emailInput.value;
-
-        // Basic email validation
-        if (email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-            // In a real application, you would send this to a server.
-            // For this demo, we'll just show a success message.
-            formMessage.textContent = 'Success! You are on the list.';
-            emailInput.value = '';
+            const threatTitleEl = document.getElementById('threat-title');
+            const threatDescriptionEl = document.getElementById('threat-description');
+            const threatDetailsEl = document.getElementById('threat-details');
+            const filterButtons = document.querySelectorAll('.filter-btn');
             
-            // Optionally clear the message after a few seconds
-            setTimeout(() => {
-                formMessage.textContent = '';
-            }, 5000);
-        } else {
-            formMessage.textContent = 'Please enter a valid email address.';
-             setTimeout(() => {
-                formMessage.textContent = '';
-            }, 3000);
-        }
-    });
+            function updateThreatsView(rightKey) {
+                const data = neurorightsData[rightKey];
+                if (!data) return;
 
-</script>
+                threatTitleEl.textContent = data.title;
+                threatDescriptionEl.textContent = data.description;
+                
+                threatDetailsEl.innerHTML = data.details.map(detail => `
+                    <div class="bg-slate-50 p-4 rounded-lg border border-slate-200">
+                        <h4 class="font-semibold text-gray-800">${detail.title}</h4>
+                        <p class="text-sm text-gray-600 mt-1">${detail.text}</p>
+                    </div>
+                `).join('');
 
+                const labels = data.violations.map(v => v.name);
+                const impactData = data.violations.map(v => v.impact);
+
+                if (threatsChart) {
+                    threatsChart.destroy();
+                }
+
+                threatsChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Potential Impact Score',
+                            data: impactData,
+                            backgroundColor: 'rgba(59, 130, 246, 0.5)',
+                            borderColor: 'rgba(59, 130, 246, 1)',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        indexAxis: 'y',
+                        scales: {
+                            x: {
+                                beginAtZero: true,
+                                max: 10,
+                                grid: {
+                                    color: 'rgba(200, 200, 200, 0.2)'
+                                }
+                            },
+                            y: {
+                                grid: {
+                                    display: false
+                                }
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                display: false
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return `Impact: ${context.raw}/10`;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+                
+                filterButtons.forEach(btn => {
+                    btn.classList.toggle('active', btn.dataset.right === rightKey);
+                });
+            }
+
+            filterButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    updateThreatsView(button.dataset.right);
+                });
+            });
+            
+            document.querySelectorAll('.neuroright-card').forEach(card => {
+                card.addEventListener('click', () => {
+                    const rightKey = card.dataset.right;
+                    document.getElementById('threats').scrollIntoView({ behavior: 'smooth' });
+                    updateThreatsView(rightKey);
+                });
+            });
+
+            updateThreatsView('mental-privacy');
+
+            const techTabs = document.querySelectorAll('.tech-tab');
+            const techContentEl = document.getElementById('tech-content');
+
+            function updateTechView(techKey) {
+                const data = techData[techKey];
+                if (!data) return;
+
+                techContentEl.innerHTML = `
+                    <h3 class="text-xl font-bold text-gray-900 mb-2">${data.title}</h3>
+                    <p class="text-gray-600 mb-4">${data.content}</p>
+                    <h4 class="font-semibold text-gray-800 mb-2">Primary Rights at Risk:</h4>
+                    <ul class="list-disc list-inside text-gray-600 space-y-1">
+                        ${data.risks.map(risk => `<li>${risk}</li>`).join('')}
+                    </ul>
+                `;
+
+                techTabs.forEach(tab => {
+                    tab.classList.toggle('active', tab.dataset.tech === techKey);
+                });
+            }
+
+            techTabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    updateTechView(tab.dataset.tech);
+                });
+            });
+            
+            updateTechView('bci');
+
+            const recommendationsContainer = document.getElementById('recommendations-container');
+            recommendationsContainer.innerHTML = recommendationsData.map((rec, index) => `
+                <div class="rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden">
+                    <button class="accordion-header w-full text-left p-4 flex justify-between items-center bg-gray-50 hover:bg-gray-100 transition">
+                        <span class="font-semibold text-lg text-blue-800">${rec.stakeholder}</span>
+                        <span class="accordion-icon text-blue-800 font-bold text-xl">+</span>
+                    </button>
+                    <div class="accordion-content hidden p-4 border-t border-gray-200">
+                        <ul class="list-disc list-inside space-y-2 text-gray-700">
+                            ${rec.points.map(point => `<li>${point}</li>`).join('')}
+                        </ul>
+                    </div>
+                </div>
+            `).join('');
+            
+            document.querySelectorAll('.accordion-header').forEach(header => {
+                header.addEventListener('click', () => {
+                    const content = header.nextElementSibling;
+                    const icon = header.querySelector('.accordion-icon');
+                    const isVisible = !content.classList.contains('hidden');
+
+                    content.classList.toggle('hidden');
+                    icon.textContent = isVisible ? '+' : '-';
+                });
+            });
+
+            const navLinks = document.querySelectorAll('.nav-link');
+            const sections = document.querySelectorAll('main section');
+
+            window.addEventListener('scroll', () => {
+                let current = '';
+                sections.forEach(section => {
+                    const sectionTop = section.offsetTop;
+                    if (pageYOffset >= sectionTop - 80) {
+                        current = section.getAttribute('id');
+                    }
+                });
+
+                navLinks.forEach(link => {
+                    link.classList.remove('active');
+                    if (link.getAttribute('href').substring(1) === current) {
+                        link.classList.add('active');
+                    }
+                });
+            });
+            
+            // Gemini API Integration
+            const generateScenarioBtn = document.getElementById('generate-scenario');
+            const scenarioOutput = document.getElementById('scenario-output');
+            const scenarioRightSelect = document.getElementById('scenario-right');
+            const scenarioTechSelect = document.getElementById('scenario-tech');
+            const summarizeBtn = document.getElementById('summarize-recommendations');
+            const modal = document.getElementById('summary-modal');
+            const closeModalBtn = document.getElementById('close-modal');
+            const modalContent = document.getElementById('modal-content');
+
+            const callGeminiAPI = async (prompt) => {
+                const apiKey = ""; 
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+                
+                const payload = {
+                    contents: [{ role: "user", parts: [{ text: prompt }] }]
+                };
+
+                try {
+                    const response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`API call failed with status: ${response.status}`);
+                    }
+
+                    const result = await response.json();
+                    if (result.candidates && result.candidates.length > 0 && result.candidates[0].content.parts.length > 0) {
+                        return result.candidates[0].content.parts[0].text;
+                    } else {
+                        return "No content generated. The response structure might have changed.";
+                    }
+                } catch (error) {
+                    console.error("Error calling Gemini API:", error);
+                    return `Error: Could not generate content. ${error.message}`;
+                }
+            };
+            
+            generateScenarioBtn.addEventListener('click', async () => {
+                const selectedRight = scenarioRightSelect.options[scenarioRightSelect.selectedIndex].text;
+                const selectedTech = scenarioTechSelect.options[scenarioTechSelect.selectedIndex].text;
+                const prompt = `Create a brief, plausible, near-future scenario (under 150 words) illustrating how the neuroright to "${selectedRight}" could be violated by "${selectedTech}" technology.`;
+                
+                scenarioOutput.innerHTML = '<div class="loader"></div>';
+                generateScenarioBtn.disabled = true;
+
+                const scenarioText = await callGeminiAPI(prompt);
+                
+                scenarioOutput.innerHTML = `<p class="text-gray-700">${scenarioText.replace(/\n/g, '<br>')}</p>`;
+                generateScenarioBtn.disabled = false;
+            });
+            
+            summarizeBtn.addEventListener('click', async () => {
+                modal.classList.remove('hidden');
+                modalContent.innerHTML = '<div class="flex justify-center items-center"><div class="loader"></div></div>';
+                
+                const fullText = recommendationsData.map(r => `For ${r.stakeholder}:\n${r.points.join('\n')}`).join('\n\n');
+                const prompt = `Summarize the following recommendations for safeguarding neurorights into a few key bullet points (under 100 words total):\n\n${fullText}`;
+
+                const summaryText = await callGeminiAPI(prompt);
+
+                modalContent.innerHTML = `<p class="text-sm text-gray-600">${summaryText.replace(/\n/g, '<br>')}</p>`;
+            });
+
+            closeModalBtn.addEventListener('click', () => {
+                modal.classList.add('hidden');
+            });
+
+            window.addEventListener('click', (event) => {
+                if (event.target == modal) {
+                    modal.classList.add('hidden');
+                }
+            });
+
+        });
+    </script>
 </body>
 </html>
